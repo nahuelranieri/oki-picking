@@ -4,47 +4,88 @@ import { postApi, getApi } from './hooks/api';
 import { DataGrid, GridToolbar, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
 import datita from './MOCK_DATA(1).json'
 import { MaterialReactTable, useMaterialReactTable } from 'material-react-table';
-import { FileDownload } from '@mui/icons-material';
+import { FileDownload, PictureAsPdf } from '@mui/icons-material';
 import { Box, Button } from '@mui/material';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 
+
 function App() {
+
+  const [apiData, setApiData] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getApi();
+        setApiData(data);
+        // console.log(data);
+      } catch (error) {
+        console.error('Error al obtener datos de la API:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const columns = useMemo(
     () => [
       {
         header: 'origen',
         accessorKey: 'origen',
+        filterVariant: 'multi-select',
+        enableColumnFilterModes: false,
       },
       {
         header: 'tienda',
         accessorKey: 'tienda',
+        filterVariant: 'multi-select',
+        enableColumnFilterModes: false,
       },
       {
         header: 'orden',
         accessorKey: 'orden',
+        filterVariant: 'multi-select',
+        enableColumnFilterModes: false,
+        enableColumnFilter: false,
       },
       {
         header: 'transporte',
         accessorKey: 'transporte',
+        filterVariant: 'multi-select',
+        enableColumnFilterModes: false,
       },
       {
         header: 'modalidad',
         accessorKey: 'modalidad',
+        filterVariant: 'multi-select',
+        enableColumnFilterModes: false,
       },
       {
-        header: 'product',
-        accessorKey: 'product',
+        header: 'fecha',
+        accessorKey: 'fecha',
+        filterVariant: 'date-range',
+        enableColumnFilterModes: false,
       },
+      // {
+      //   header: 'product',
+      //   accessorKey: 'product',
+      //   enableColumnFilterModes: false,
+      //   enableColumnFilter: false,
+
+      // },
       {
         header: 'cantidad',
         accessorKey: 'cantidad',
+        columnFilterModeOptions: ['between', 'greaterThan', 'lessThan', 'equals'],
+        filterFn: 'equals',
+        size: 200,
+
+
       },
-      {
-        header: 'id',
-        accessorKey: 'id',
-        size: 50,
-      },
+      // {
+      //   header: 'id',
+      //   accessorKey: 'id',
+      //   size: 100,
+      // },
     ],
     [],
   );
@@ -61,17 +102,24 @@ function App() {
   //   const csv = generateCsv(csvConfig)(rowData);
   //   download(csvConfig)(csv);
   // };
-  const handleExportRows = (rows) => {
+
+  const handlePrintPdfRows = (rows) => {
     const rowData = rows.map((row) => row.original);
-    const csv = generateCsv(csvConfig)(rowData);
-    download(csvConfig)(csv);
+    const ordenColumn = rowData.map((data) => data.orden).slice(0, 30);
+    console.log(ordenColumn);
   };
-  
+
+
+
   const table = useMaterialReactTable({
     columns,
-    data:datita,
+    data: apiData,
     initialState: { showColumnFilters: false, density: 'compact' },
     enableRowSelection: true,
+    enableFacetedValues: true,
+    enableColumnFilterModes: true,
+    enableFullScreenToggle: false,
+    enableDensityToggle: false,
     renderTopToolbarCustomActions: ({ table }) => (
       <Box
         sx={{
@@ -81,7 +129,7 @@ function App() {
           flexWrap: 'wrap',
         }}
       >
-        <Button
+        {/* <Button
           disabled={table.getPrePaginationRowModel().rows.length === 0}
           onClick={() => {
             if (table.getIsSomeRowsSelected() || table.getIsAllRowsSelected()) {
@@ -93,6 +141,18 @@ function App() {
           startIcon={<FileDownload />}
         >
           Export
+        </Button> */}
+        <Button
+          onClick={() => {
+            if (table.getIsSomeRowsSelected() || table.getIsAllRowsSelected()) {
+              handlePrintPdfRows(table.getSelectedRowModel().rows)
+            } else {
+              handlePrintPdfRows(table.getPrePaginationRowModel().rows)
+            }
+          }}
+          startIcon={<PictureAsPdf />}
+        >
+          Print PDF
         </Button>
       </Box>
     )

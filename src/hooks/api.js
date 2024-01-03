@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const BASE_URL = 'http://market.sevensport.com.ar/api/process_articles'
+const BASE_URL = 'https://market.sevensport.com.ar/api/batchs/orders-pending'
 
 export const postApi = async (data) => {
     try {
