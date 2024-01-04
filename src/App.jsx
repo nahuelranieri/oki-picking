@@ -12,17 +12,22 @@ import { mkConfig, generateCsv, download } from 'export-to-csv';
 function App() {
 
   const [apiData, setApiData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('loading antes', loading);
+        setLoading(true)
         const data = await getApi();
         setApiData(data);
-        // console.log(data);
       } catch (error) {
         console.error('Error al obtener datos de la API:', error);
+      } finally {
+        setLoading(false);
+        console.log('loading después', loading);
       }
     };
-
     fetchData();
   }, []);
 
@@ -65,27 +70,13 @@ function App() {
         filterVariant: 'date-range',
         enableColumnFilterModes: false,
       },
-      // {
-      //   header: 'product',
-      //   accessorKey: 'product',
-      //   enableColumnFilterModes: false,
-      //   enableColumnFilter: false,
-
-      // },
       {
         header: 'cantidad',
         accessorKey: 'cantidad',
         columnFilterModeOptions: ['between', 'greaterThan', 'lessThan', 'equals'],
         filterFn: 'equals',
         size: 200,
-
-
       },
-      // {
-      //   header: 'id',
-      //   accessorKey: 'id',
-      //   size: 100,
-      // },
     ],
     [],
   );
@@ -97,16 +88,21 @@ function App() {
     useBom: true,
   });
 
-  // const handleExportRows = (rows) => {
-  //   const rowData = rows.map((row) => row.original);
-  //   const csv = generateCsv(csvConfig)(rowData);
-  //   download(csvConfig)(csv);
-  // };
-
-  const handlePrintPdfRows = (rows) => {
+  const handlePrintPdfRows = async(rows) => {
     const rowData = rows.map((row) => row.original);
-    const ordenColumn = rowData.map((data) => data.orden).slice(0, 30);
-    console.log(ordenColumn);
+    const ordenYOrigen = rowData.map((data) => ({ orden: data.orden, origen: data.origen })).slice(0, 30); 
+    try {
+      const response = await postApi(ordenYOrigen);
+      const baseUrl = 'https://market.sevensport.com.ar/api/batchs';
+      const url1 = `${baseUrl}/get/${response}/false`;
+      const url2 = `${baseUrl}/get-meli-labels/${response}/`;
+    
+      window.open(url1, '_blank');
+      window.open(url2, '_blank');
+    } catch (error) {
+      console.log('Error al crear el pdf:', error);
+    }
+  
   };
 
 
@@ -120,6 +116,10 @@ function App() {
     enableColumnFilterModes: true,
     enableFullScreenToggle: false,
     enableDensityToggle: false,
+    enableColumnResizing: true,
+    state: {
+      showSkeletons: loading, 
+    },
     renderTopToolbarCustomActions: ({ table }) => (
       <Box
         sx={{
@@ -129,19 +129,6 @@ function App() {
           flexWrap: 'wrap',
         }}
       >
-        {/* <Button
-          disabled={table.getPrePaginationRowModel().rows.length === 0}
-          onClick={() => {
-            if (table.getIsSomeRowsSelected() || table.getIsAllRowsSelected()) {
-              handleExportRows(table.getSelectedRowModel().rows)
-            } else {
-              handleExportRows(table.getPrePaginationRowModel().rows)
-            }
-          }}
-          startIcon={<FileDownload />}
-        >
-          Export
-        </Button> */}
         <Button
           onClick={() => {
             if (table.getIsSomeRowsSelected() || table.getIsAllRowsSelected()) {
@@ -162,16 +149,8 @@ function App() {
     <>
       <MaterialReactTable
         table={table}
-        state={{ isLoading: true }}
-        muiCircularProgressProps={{
-          color: 'secondary',
-          thickness: 5,
-          size: 55,
-        }}
-        muiSkeletonProps={{
-          animation: 'pulse',
-          height: 28,
-        }}
+        
+        
       />
     </>
   )
