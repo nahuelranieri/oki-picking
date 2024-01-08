@@ -4,7 +4,7 @@ import { postApi, getApi } from './hooks/api';
 import { DataGrid, GridToolbar, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
 import datita from './MOCK_DATA(1).json'
 import { MaterialReactTable, useMaterialReactTable } from 'material-react-table';
-import { FileDownload, PictureAsPdf } from '@mui/icons-material';
+import { FileDownload, PictureAsPdf, Refresh } from '@mui/icons-material';
 import { Box, Button } from '@mui/material';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 
@@ -13,11 +13,13 @@ function App() {
 
   const [apiData, setApiData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [refreshData, setRefreshData] = useState(false);
+  const [rowSelection, setRowSelection] = useState({});
 
   useEffect(() => {
+  
     const fetchData = async () => {
       try {
-        console.log('loading antes', loading);
         setLoading(true)
         const data = await getApi();
         setApiData(data);
@@ -25,11 +27,13 @@ function App() {
         console.error('Error al obtener datos de la API:', error);
       } finally {
         setLoading(false);
-        console.log('loading después', loading);
       }
     };
-    fetchData();
-  }, []);
+    
+      fetchData();
+      setRefreshData(false);
+    
+  }, [refreshData]);
 
   const columns = useMemo(
     () => [
@@ -70,13 +74,6 @@ function App() {
         filterVariant: 'date-range',
         enableColumnFilterModes: false,
       },
-      {
-        header: 'cantidad',
-        accessorKey: 'cantidad',
-        columnFilterModeOptions: ['between', 'greaterThan', 'lessThan', 'equals'],
-        filterFn: 'equals',
-        size: 200,
-      },
     ],
     [],
   );
@@ -99,13 +96,15 @@ function App() {
     
       window.open(url1, '_blank');
       window.open(url2, '_blank');
+
+
     } catch (error) {
       console.log('Error al crear el pdf:', error);
+    }finally{
+      setRefreshData(true);
+      setRowSelection({})
     }
-  
   };
-
-
 
   const table = useMaterialReactTable({
     columns,
@@ -117,8 +116,11 @@ function App() {
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     enableColumnResizing: true,
+    onRowSelectionChange: setRowSelection,
     state: {
-      showSkeletons: loading, 
+      showSkeletons: loading,
+      rowSelection 
+      
     },
     renderTopToolbarCustomActions: ({ table }) => (
       <Box
@@ -141,6 +143,12 @@ function App() {
         >
           Print PDF
         </Button>
+        <Button
+          startIcon={<Refresh />}
+          onClick={()=> {setRefreshData(true)}}
+        >
+          Refresh
+        </Button>
       </Box>
     )
   });
@@ -149,7 +157,6 @@ function App() {
     <>
       <MaterialReactTable
         table={table}
-        
         
       />
     </>
