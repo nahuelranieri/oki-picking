@@ -78,13 +78,6 @@ function App() {
     [],
   );
 
-  const csvConfig = mkConfig({
-    fieldSeparator: ';',
-    useKeysAsHeaders: true,
-    filename: 'OkiPickingData',
-    useBom: true,
-  });
-
   const handlePrintPdfRows = async(rows) => {
     const rowData = rows.map((row) => row.original);
     const ordenYOrigen = rowData.map((data) => ({ orden: data.orden, origen: data.origen })).slice(0, 30); 
@@ -116,6 +109,7 @@ function App() {
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     enableColumnResizing: true,
+    positionToolbarAlertBanner: 'bottom',
     onRowSelectionChange: setRowSelection,
     state: {
       showSkeletons: loading,
