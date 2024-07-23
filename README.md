@@ -1,8 +1,4 @@
-# React + Vite
+# Oki Picking
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Imagen de WhatsApp 2024-07-23 a las 16 44 20_53ab63df](https://github.com/user-attachments/assets/3fd07f4f-b488-42b5-925a-811ec712e935)
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
